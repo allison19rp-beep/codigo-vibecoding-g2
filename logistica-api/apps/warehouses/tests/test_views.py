@@ -9,9 +9,10 @@ from apps.warehouses.models import Warehouse
 class WarehouseViewSetTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create_user(
+        cls.user = User.objects.create_superuser(
             username='testuser',
-            password='testpass123'
+            password='testpass123',
+            email='test@test.com',
         )
         cls.warehouse = Warehouse.objects.create(
             name='Test Warehouse',

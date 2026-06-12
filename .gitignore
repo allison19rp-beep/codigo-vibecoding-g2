@@ -26,6 +26,12 @@ build/
 # Logs
 *.log
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+db.sqlite3
+
 # Prisma generated (auto-regenerated)
 task-manager-backend/src/generated/prisma/
 

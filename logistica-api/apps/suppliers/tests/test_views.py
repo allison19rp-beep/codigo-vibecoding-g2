@@ -8,9 +8,10 @@ from apps.suppliers.models import Supplier
 class SupplierViewSetTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create_user(
+        cls.user = User.objects.create_superuser(
             username='testuser',
-            password='testpass123'
+            password='testpass123',
+            email='test@test.com',
         )
         cls.supplier = Supplier.objects.create(
             name='Tech Supplies SAS',
