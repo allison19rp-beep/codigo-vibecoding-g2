@@ -25,6 +25,12 @@ build/
 
 # Logs
 *.log
+*-error.txt
+*-output.txt
+*-stderr.txt
+*-stdout.txt
+prompt-*.md
+base-de-datos-*.txt
 
 # Python
 __pycache__/

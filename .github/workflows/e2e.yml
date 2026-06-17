@@ -1,0 +1,109 @@
+name: E2E — Logística Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "logistica-frontend/**"
+      - "logistica-api/**"
+      - ".github/workflows/e2e.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "logistica-frontend/**"
+      - "logistica-api/**"
+      - ".github/workflows/e2e.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: logistica-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: logistica-api/requirements.txt
+
+      - name: Install Python dependencies
+        working-directory: logistica-api
+        run: pip install -r requirements.txt
+
+      - name: Run Django migrations
+        working-directory: logistica-api
+        run: python manage.py migrate
+
+      - name: Create test user
+        working-directory: logistica-api
+        run: |
+          python manage.py shell <<EOF
+          from django.contrib.auth import get_user_model
+          User = get_user_model()
+          if not User.objects.filter(username="testuser").exists():
+              User.objects.create_user("testuser", password="TestPass123!")
+              print("User created")
+          else:
+              print("User already exists")
+          EOF
+
+      - name: Start Django backend
+        working-directory: logistica-api
+        run: |
+          python manage.py runserver 0.0.0.0:8000 &
+          echo "Django PID: $!"
+        shell: bash
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: logistica-frontend/package-lock.json
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build Next.js app
+        run: npm run build
+
+      - name: Start Next.js frontend
+        run: |
+          npm run start &
+          echo "Next.js PID: $!"
+        shell: bash
+
+      - name: Wait for services
+        run: |
+          echo "Waiting for Django..."
+          timeout 60 bash -c 'until curl -s http://localhost:8000/api/v1/docs/ > /dev/null 2>&1; do sleep 2; done'
+          echo "Django ready"
+          echo "Waiting for Next.js..."
+          timeout 60 bash -c 'until curl -s http://localhost:3000 > /dev/null 2>&1; do sleep 2; done'
+          echo "Next.js ready"
+        shell: bash
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test --reporter=list
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            logistica-frontend/playwright-report/
+            logistica-frontend/test-results/
+          retention-days: 7
