@@ -1,8 +1,12 @@
 "use client"
 
-import type { CustomTooltipProps } from "@tremor/react"
+interface ChartTooltipProps {
+  payload?: { name: string | number; value: number | string; color: string }[]
+  active?: boolean
+  label?: string | number
+}
 
-export function ChartTooltip({ payload, active, label }: CustomTooltipProps) {
+export function ChartTooltip({ payload, active, label }: ChartTooltipProps) {
   if (!active || !payload) return null
 
   return (

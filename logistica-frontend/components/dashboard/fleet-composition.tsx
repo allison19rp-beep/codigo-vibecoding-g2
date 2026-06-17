@@ -2,7 +2,10 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { BarChart } from "@tremor/react"
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer,
+} from "recharts"
 import type { FleetItem } from "@/types/dashboard"
 import { ChartTooltip } from "./chart-tooltip"
 
@@ -48,17 +51,15 @@ export function FleetComposition({ data, isLoading }: FleetCompositionProps) {
             No hay vehículos registrados
           </div>
         ) : (
-          <BarChart
-            data={chartData}
-            index="name"
-            categories={["cantidad"]}
-            colors={["indigo"]}
-            layout="vertical"
-            showLegend={false}
-            showAnimation
-            customTooltip={ChartTooltip}
-            className="h-[250px]"
-          />
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={chartData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis type="number" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+              <Tooltip content={<ChartTooltip />} />
+              <Bar dataKey="cantidad" fill="#6366f1" />
+            </BarChart>
+          </ResponsiveContainer>
         )}
       </CardContent>
     </Card>

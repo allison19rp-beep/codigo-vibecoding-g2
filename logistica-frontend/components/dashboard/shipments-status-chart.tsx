@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DonutChart, Legend } from "@tremor/react"
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import type { ChartDataItem } from "@/types/dashboard"
 import { ChartTooltip } from "./chart-tooltip"
 
@@ -12,12 +12,12 @@ interface ShipmentsStatusChartProps {
 }
 
 const statusColors: Record<string, string> = {
-  PENDING: "amber",
-  CONFIRMED: "blue",
-  IN_TRANSIT: "orange",
-  DELIVERED: "emerald",
-  CANCELLED: "rose",
-  RETURNED: "slate",
+  PENDING: "#f59e0b",
+  CONFIRMED: "#3b82f6",
+  IN_TRANSIT: "#f97316",
+  DELIVERED: "#10b981",
+  CANCELLED: "#f43f5e",
+  RETURNED: "#64748b",
 }
 
 const statusLabels: Record<string, string> = {
@@ -38,7 +38,7 @@ export function ShipmentsStatusChart({ data, isLoading }: ShipmentsStatusChartPr
     value: item.value,
   }))
 
-  const colors = data.map(item => statusColors[item.name] ?? "slate")
+  const colors = data.map(item => statusColors[item.name] ?? "#64748b")
 
   if (isLoading) {
     return (
@@ -65,22 +65,26 @@ export function ShipmentsStatusChart({ data, isLoading }: ShipmentsStatusChartPr
           </div>
         ) : (
           <>
-            <DonutChart
-              data={chartData}
-              category="value"
-              index="name"
-              colors={colors}
-              showAnimation
-              valueFormatter={valueFormatter}
-              customTooltip={ChartTooltip}
-              className="h-[250px]"
-            />
-            <div className="mt-3 flex justify-center">
-              <Legend
-                categories={chartData.map(d => d.name)}
-                colors={colors}
-              />
-            </div>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={2}
+                >
+                  {chartData.map((entry, i) => (
+                    <Cell key={i} fill={colors[i] ?? "#64748b"} />
+                  ))}
+                </Pie>
+                <Tooltip content={<ChartTooltip />} formatter={valueFormatter} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </>
         )}
       </CardContent>

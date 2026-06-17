@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DonutChart } from "@tremor/react"
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 import type { ChartDataItem } from "@/types/dashboard"
 import { ChartTooltip } from "./chart-tooltip"
 
@@ -17,8 +17,8 @@ const typeLabels: Record<string, string> = {
 }
 
 const typeColors: Record<string, string> = {
-  COMPANY: "emerald",
-  INDIVIDUAL: "cyan",
+  COMPANY: "#10b981",
+  INDIVIDUAL: "#06b6d4",
 }
 
 const valueFormatter = (n: number) =>
@@ -30,7 +30,7 @@ export function CustomersByType({ data, isLoading }: CustomersByTypeProps) {
     value: item.value,
   }))
 
-  const colors = data.map(item => typeColors[item.name] ?? "slate")
+  const colors = data.map(item => typeColors[item.name] ?? "#64748b")
 
   if (isLoading) {
     return (
@@ -56,16 +56,25 @@ export function CustomersByType({ data, isLoading }: CustomersByTypeProps) {
             No hay clientes registrados
           </div>
         ) : (
-          <DonutChart
-            data={chartData}
-            category="value"
-            index="name"
-            colors={colors}
-            showAnimation
-            valueFormatter={valueFormatter}
-            customTooltip={ChartTooltip}
-            className="h-[250px]"
-          />
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={2}
+              >
+                {chartData.map((entry, i) => (
+                  <Cell key={i} fill={colors[i] ?? "#64748b"} />
+                ))}
+              </Pie>
+              <Tooltip content={<ChartTooltip />} formatter={valueFormatter} />
+            </PieChart>
+          </ResponsiveContainer>
         )}
       </CardContent>
     </Card>
